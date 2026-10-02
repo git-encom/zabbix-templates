@@ -1,0 +1,20 @@
+# Local credentials and scratch directories
+.env
+.env.*
+work/
+__pycache__/
+*.pyc
+
+# Unsanitized device walks must remain outside the public repository
+*-vendor.txt
+*-interfaces.txt
+*-sensors.txt
+*-hardware.txt
+*-iftable.txt
+*.snmpwalk
+*.snmprec
+
+# Editor and operating system files
+.DS_Store
+Thumbs.db
+.vscode/

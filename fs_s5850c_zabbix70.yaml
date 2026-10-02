@@ -1,0 +1,1913 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+  - uuid: 36bff6c29af64692839d077febfc7079
+    name: Templates/Network devices
+  templates:
+  - uuid: 99264f91e6c1415fb70f8e0e3e9de744
+    template: FS S5850C by SNMP
+    name: FS S5850C by SNMP
+    description: Standalone Zabbix 7.0 template for FS S5850C-24S2C, firmware 3.3.1.2.2, sysObjectID 1.3.6.1.4.1.52642.1.99.21252. OIDs and conversions
+      checked against supplied SNMP walks and SWITCH MIB. Live import/polling not yet verified. SNMPv2c community is configured on the host SNMP
+      interface. Optional IF-MIB status/error discovery is disabled until its OIDs are verified. Optical thresholds are opt-in. QSFP multi-value
+      readings are retained as raw text and are not converted to a single channel. No external scripts or linked templates required. See README-hu.md.
+    vendor:
+      name: Custom
+      version: 1.0.0
+    groups:
+    - name: Templates/Network devices
+    items:
+    - uuid: ab1336375450459e8405500f56f18249
+      name: System description
+      type: SNMP_AGENT
+      key: fs.system.description
+      delay: 1h
+      history: 14d
+      trends: '0'
+      tags:
+      - tag: component
+        value: system
+      snmp_oid: get[1.3.6.1.2.1.1.1.0]
+      value_type: TEXT
+    - uuid: c3cab22f81ee466e8e2047d6f6bce2b4
+      name: System object ID
+      type: SNMP_AGENT
+      key: fs.system.objectid
+      delay: 1h
+      history: 14d
+      trends: '0'
+      tags:
+      - tag: component
+        value: system
+      snmp_oid: get[1.3.6.1.2.1.1.2.0]
+      value_type: CHAR
+    - uuid: 2459fa4b2ae24ab9bf1f8b134496780b
+      name: Firmware version
+      type: SNMP_AGENT
+      key: fs.firmware
+      delay: 1h
+      history: 14d
+      trends: '0'
+      tags:
+      - tag: component
+        value: system
+      snmp_oid: get[1.3.6.1.2.1.47.1.1.1.1.10.1]
+      value_type: CHAR
+    - uuid: 79c60f7584964e52851b6514cb924c88
+      name: Hardware serial number
+      type: SNMP_AGENT
+      key: fs.serial
+      delay: 1h
+      history: 14d
+      trends: '0'
+      tags:
+      - tag: component
+        value: system
+      snmp_oid: get[1.3.6.1.2.1.47.1.1.1.1.11.1]
+      value_type: CHAR
+    - uuid: 7deed7a2acfd4fed9b7b7d2297d203a1
+      name: Hardware model
+      type: SNMP_AGENT
+      key: fs.model
+      delay: 1h
+      history: 14d
+      trends: '0'
+      tags:
+      - tag: component
+        value: system
+      snmp_oid: get[1.3.6.1.2.1.47.1.1.1.1.13.1]
+      value_type: CHAR
+    - uuid: 06085504f24e48fcad9ba62a0ed496e2
+      name: System uptime (vendor TimeTicks)
+      type: SNMP_AGENT
+      key: fs.uptime
+      delay: 1m
+      history: 14d
+      trends: 365d
+      tags:
+      - tag: component
+        value: system
+      snmp_oid: get[1.3.6.1.4.1.52642.1.1.3.10.0]
+      units: uptime
+      preprocessing:
+      - type: MULTIPLIER
+        parameters:
+        - '0.01'
+      description: TimeTicks / 100. Counter wraps after about 497 days. A decrease can also indicate agent restart.
+      triggers:
+      - uuid: 79f03c77ef904d768dd9b6294badaa07
+        name: 'FS S5850C: Uptime reset (possible restart)'
+        expression: change(/FS S5850C by SNMP/fs.uptime)<0 and last(/FS S5850C by SNMP/fs.uptime)<600 and last(/FS S5850C by SNMP/fs.uptime,#2)<42948772
+        priority: INFO
+        tags:
+        - tag: scope
+          value: performance
+        description: 'Heuristic: excludes the last 15 minutes before TimeTicks wrap. An agent restart can also reset uptime; this is not proof
+          of a chassis reboot.'
+    - uuid: f99a589d91d54afc8e4c492d2290f5e2
+      name: CPU utilization (5 seconds)
+      type: SNMP_AGENT
+      key: fs.cpu.util[1]
+      delay: 1m
+      history: 14d
+      trends: 365d
+      tags:
+      - tag: component
+        value: cpu
+      snmp_oid: get[1.3.6.1.4.1.52642.1.1.9.1.0]
+      value_type: FLOAT
+      units: '%'
+      preprocessing:
+      - type: JAVASCRIPT
+        parameters:
+        - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[0-9]+(?:\.[0-9]+)?%$/.test(s)) { throw 'Expected a percentage'; } var n = Number(s.slice(0,-1));
+          if (n < 0 || n > 100) { throw 'Percentage outside 0..100'; } return n;
+    - uuid: c1e258cbe60e4d0e919eee096512b294
+      name: CPU utilization (1 minute)
+      type: SNMP_AGENT
+      key: fs.cpu.util[2]
+      delay: 1m
+      history: 14d
+      trends: 365d
+      tags:
+      - tag: component
+        value: cpu
+      snmp_oid: get[1.3.6.1.4.1.52642.1.1.9.2.0]
+      value_type: FLOAT
+      units: '%'
+      preprocessing:
+      - type: JAVASCRIPT
+        parameters:
+        - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[0-9]+(?:\.[0-9]+)?%$/.test(s)) { throw 'Expected a percentage'; } var n = Number(s.slice(0,-1));
+          if (n < 0 || n > 100) { throw 'Percentage outside 0..100'; } return n;
+      triggers:
+      - uuid: 92a4628a9fb84d18906885c6cfc84f8b
+        name: 'FS S5850C: High CPU utilization'
+        expression: min(/FS S5850C by SNMP/fs.cpu.util[2],5m)>{$FS.CPU.WARN}
+        priority: WARNING
+        tags:
+        - tag: scope
+          value: performance
+        recovery_mode: RECOVERY_EXPRESSION
+        recovery_expression: max(/FS S5850C by SNMP/fs.cpu.util[2],5m)<{$FS.CPU.WARN}-5
+    - uuid: f0087abf36694a4fbcdac45aaf3d880f
+      name: CPU utilization (5 minutes)
+      type: SNMP_AGENT
+      key: fs.cpu.util[3]
+      delay: 1m
+      history: 14d
+      trends: 365d
+      tags:
+      - tag: component
+        value: cpu
+      snmp_oid: get[1.3.6.1.4.1.52642.1.1.9.3.0]
+      value_type: FLOAT
+      units: '%'
+      preprocessing:
+      - type: JAVASCRIPT
+        parameters:
+        - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[0-9]+(?:\.[0-9]+)?%$/.test(s)) { throw 'Expected a percentage'; } var n = Number(s.slice(0,-1));
+          if (n < 0 || n > 100) { throw 'Percentage outside 0..100'; } return n;
+    - uuid: c12c191ee59a4fa78cda3d7b313d98cf
+      name: Reported memory total
+      type: SNMP_AGENT
+      key: fs.memory.total
+      delay: 1m
+      history: 14d
+      trends: 365d
+      tags:
+      - tag: component
+        value: memory
+      snmp_oid: get[1.3.6.1.4.1.52642.1.1.1.5.0]
+      units: B
+      preprocessing:
+      - type: MULTIPLIER
+        parameters:
+        - '1024'
+      description: SWITCH MIB reports kB; converted with multiplier 1024. Free/used counters may include virtual memory according to the MIB.
+    - uuid: 22830abcae1349009da5f23ed0e93dad
+      name: Reported memory free
+      type: SNMP_AGENT
+      key: fs.memory.free
+      delay: 1m
+      history: 14d
+      trends: 365d
+      tags:
+      - tag: component
+        value: memory
+      snmp_oid: get[1.3.6.1.4.1.52642.1.1.1.11.0]
+      units: B
+      preprocessing:
+      - type: MULTIPLIER
+        parameters:
+        - '1024'
+      description: SWITCH MIB reports kB; converted with multiplier 1024. Free/used counters may include virtual memory according to the MIB.
+    - uuid: 205bbe41b9414a0a907af2f1af853e57
+      name: Reported memory used
+      type: SNMP_AGENT
+      key: fs.memory.used
+      delay: 1m
+      history: 14d
+      trends: 365d
+      tags:
+      - tag: component
+        value: memory
+      snmp_oid: get[1.3.6.1.4.1.52642.1.1.1.12.0]
+      units: B
+      preprocessing:
+      - type: MULTIPLIER
+        parameters:
+        - '1024'
+      description: SWITCH MIB reports kB; converted with multiplier 1024. Free/used counters may include virtual memory according to the MIB.
+    - uuid: a482f17fe2c44b409413876eb5d32aa6
+      name: Reported memory utilization
+      type: CALCULATED
+      key: fs.memory.util
+      delay: 1m
+      history: 14d
+      trends: 365d
+      tags:
+      - tag: component
+        value: memory
+      value_type: FLOAT
+      units: '%'
+      params: 100*last(//fs.memory.used)/last(//fs.memory.total)
+      triggers:
+      - uuid: d7561f934e33471da8fc95cd67b9d36c
+        name: 'FS S5850C: High reported memory utilization'
+        expression: min(/FS S5850C by SNMP/fs.memory.util,5m)>{$FS.MEMORY.WARN}
+        priority: WARNING
+        tags:
+        - tag: scope
+          value: performance
+        recovery_mode: RECOVERY_EXPRESSION
+        recovery_expression: max(/FS S5850C by SNMP/fs.memory.util,5m)<{$FS.MEMORY.WARN}-5
+    - uuid: 958397c3295a4fffa72b6503045105d9
+      name: SNMP availability
+      type: INTERNAL
+      key: zabbix[host,snmp,available]
+      delay: 1m
+      history: 14d
+      trends: 365d
+      tags:
+      - tag: component
+        value: health
+      valuemap:
+        name: SNMP availability
+      triggers:
+      - uuid: e717db30e81e42a5a5c5a7584f47c514
+        name: 'FS S5850C: SNMP unavailable'
+        expression: max(/FS S5850C by SNMP/zabbix[host,snmp,available],{$FS.SNMP.TIMEOUT})=0
+        priority: HIGH
+        tags:
+        - tag: scope
+          value: availability
+    - uuid: f30c514786954eb48ffa427770decb83
+      name: 'Interface counters: SNMP walk'
+      type: SNMP_AGENT
+      key: fs.if.walk
+      delay: 1m
+      history: '0'
+      trends: '0'
+      tags:
+      - tag: component
+        value: interface
+      value_type: TEXT
+      snmp_oid: walk[1.3.6.1.2.1.31.1.1.1.6,1.3.6.1.2.1.31.1.1.1.10,1.3.6.1.2.1.31.1.1.1.15]
+    - uuid: 11a89eab95574ef6814be1f8f03775fd
+      name: 'Optical diagnostics: SNMP walk'
+      type: SNMP_AGENT
+      key: fs.optics.walk
+      delay: 1m
+      history: '0'
+      trends: '0'
+      tags:
+      - tag: component
+        value: optics
+      value_type: TEXT
+      snmp_oid: walk[1.3.6.1.4.1.52642.1.37.1.10]
+    discovery_rules:
+    - uuid: f3cc59f8f42d4b488da6df007a2b1df4
+      name: Physical interface discovery
+      type: SNMP_AGENT
+      key: fs.if.discovery
+      snmp_oid: discovery[{#IFNAME},1.3.6.1.2.1.31.1.1.1.1,{#IFALIAS},1.3.6.1.2.1.31.1.1.1.18]
+      delay: 1h
+      lifetime: 7d
+      enabled_lifetime_type: DISABLE_IMMEDIATELY
+      item_prototypes:
+      - uuid: b534db3e56374b299f1e074abe1c7385
+        name: 'Interface {#IFNAME} ({#IFALIAS}): Incoming traffic'
+        type: DEPENDENT
+        key: fs.if.in[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: interface
+        units: bps
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.2.1.31.1.1.1.6.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: CHANGE_PER_SECOND
+          parameters:
+          - ''
+        - type: MULTIPLIER
+          parameters:
+          - '8'
+        master_item:
+          key: fs.if.walk
+        description: Native Counter64 rate conversion; no JavaScript numeric cast. Counter decreases are discarded by CHANGE_PER_SECOND.
+      - uuid: 93a279f791604d6ea8e366e5a9ddc969
+        name: 'Interface {#IFNAME} ({#IFALIAS}): Outgoing traffic'
+        type: DEPENDENT
+        key: fs.if.out[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: interface
+        units: bps
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.2.1.31.1.1.1.10.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: CHANGE_PER_SECOND
+          parameters:
+          - ''
+        - type: MULTIPLIER
+          parameters:
+          - '8'
+        master_item:
+          key: fs.if.walk
+        description: Native Counter64 rate conversion; no JavaScript numeric cast. Counter decreases are discarded by CHANGE_PER_SECOND.
+      - uuid: f7b09f62a8b94c409e6f8d393e732cdc
+        name: 'Interface {#IFNAME}: Reported speed'
+        type: DEPENDENT
+        key: fs.if.speed[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: interface
+        units: bps
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.2.1.31.1.1.1.15.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: MULTIPLIER
+          parameters:
+          - '1000000'
+        master_item:
+          key: fs.if.walk
+        description: ifHighSpeed is in Mbps. This is the reported speed, not a hard-coded port maximum; down ports may report a nominal speed.
+      filter:
+        evaltype: AND
+        conditions:
+        - macro: '{#IFNAME}'
+          value: '{$FS.IF.NAME.MATCHES}'
+          operator: MATCHES_REGEX
+          formulaid: A
+        - macro: '{#IFNAME}'
+          value: '{$FS.IF.NAME.NOT_MATCHES}'
+          operator: NOT_MATCHES_REGEX
+          formulaid: B
+      trigger_prototypes:
+      - uuid: 0ea4e40067164b77baa2b38b182f9350
+        name: 'FS S5850C: Interface {#IFNAME}: High bandwidth utilization'
+        expression: last(/FS S5850C by SNMP/fs.if.speed[{#SNMPINDEX}])>0 and (avg(/FS S5850C by SNMP/fs.if.in[{#SNMPINDEX}],5m)>last(/FS S5850C
+          by SNMP/fs.if.speed[{#SNMPINDEX}])*{$FS.IF.UTIL.WARN}/100 or avg(/FS S5850C by SNMP/fs.if.out[{#SNMPINDEX}],5m)>last(/FS S5850C by SNMP/fs.if.speed[{#SNMPINDEX}])*{$FS.IF.UTIL.WARN}/100)
+        priority: WARNING
+        tags:
+        - tag: scope
+          value: performance
+        recovery_mode: RECOVERY_EXPRESSION
+        recovery_expression: last(/FS S5850C by SNMP/fs.if.speed[{#SNMPINDEX}])=0 or (avg(/FS S5850C by SNMP/fs.if.in[{#SNMPINDEX}],5m)<last(/FS
+          S5850C by SNMP/fs.if.speed[{#SNMPINDEX}])*({$FS.IF.UTIL.WARN}-5)/100 and avg(/FS S5850C by SNMP/fs.if.out[{#SNMPINDEX}],5m)<last(/FS
+          S5850C by SNMP/fs.if.speed[{#SNMPINDEX}])*({$FS.IF.UTIL.WARN}-5)/100)
+      graph_prototypes:
+      - uuid: 4597ff43ad19484cadbb589b85b10111
+        name: 'Interface {#IFNAME}: Traffic'
+        graph_items:
+        - sortorder: '0'
+          color: 199C0D
+          item:
+            host: FS S5850C by SNMP
+            key: fs.if.in[{#SNMPINDEX}]
+        - sortorder: '1'
+          color: F63100
+          item:
+            host: FS S5850C by SNMP
+            key: fs.if.out[{#SNMPINDEX}]
+    - uuid: a511d91e07f94369b11eea28547e8d19
+      name: Optional IF-MIB status/errors discovery (verify then enable)
+      type: SNMP_AGENT
+      key: fs.if.extended.discovery
+      snmp_oid: discovery[{#IFNAME},1.3.6.1.2.1.31.1.1.1.1,{#IFALIAS},1.3.6.1.2.1.31.1.1.1.18]
+      delay: 1h
+      lifetime: 7d
+      enabled_lifetime_type: DISABLE_IMMEDIATELY
+      item_prototypes:
+      - uuid: b8939fc5ab794a36a9fc2331af4a0600
+        name: 'Interface {#IFNAME}: Administrative status'
+        type: SNMP_AGENT
+        key: fs.if.admin[{#SNMPINDEX}]
+        delay: 1m
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: interface
+        snmp_oid: get[1.3.6.1.2.1.2.2.1.7.{#SNMPINDEX}]
+        description: Standard IF-MIB OID; not verified in the supplied ifX-only dump.
+        valuemap:
+          name: IF admin status
+      - uuid: 34e96873fe704f079b6de240c0669cf1
+        name: 'Interface {#IFNAME}: Operational status'
+        type: SNMP_AGENT
+        key: fs.if.oper[{#SNMPINDEX}]
+        delay: 1m
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: interface
+        snmp_oid: get[1.3.6.1.2.1.2.2.1.8.{#SNMPINDEX}]
+        description: Standard IF-MIB OID; not verified in the supplied ifX-only dump.
+        valuemap:
+          name: IF oper status
+        trigger_prototypes:
+        - uuid: 8fa4614541f942e48691dc896b55629b
+          name: 'FS S5850C: Interface {#IFNAME}: Link down'
+          expression: '{$FS.IF.CONTROL:"{#IFNAME}"}=1 and last(/FS S5850C by SNMP/fs.if.admin[{#SNMPINDEX}])=1 and min(/FS S5850C by SNMP/fs.if.oper[{#SNMPINDEX}],3m)=2
+            and max(/FS S5850C by SNMP/fs.if.oper[{#SNMPINDEX}],3m)=2'
+          priority: AVERAGE
+          tags:
+          - tag: scope
+            value: performance
+          recovery_mode: RECOVERY_EXPRESSION
+          recovery_expression: '{$FS.IF.CONTROL:"{#IFNAME}"}=0 or last(/FS S5850C by SNMP/fs.if.admin[{#SNMPINDEX}])<>1 or last(/FS S5850C by
+            SNMP/fs.if.oper[{#SNMPINDEX}])<>2'
+      - uuid: 04ef02e0aaf340e7b2846520f75e1de7
+        name: 'Interface {#IFNAME}: Incoming discards'
+        type: SNMP_AGENT
+        key: fs.if.in.discards[{#SNMPINDEX}]
+        delay: 1m
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: interface
+        snmp_oid: get[1.3.6.1.2.1.2.2.1.13.{#SNMPINDEX}]
+        units: pps
+        preprocessing:
+        - type: CHANGE_PER_SECOND
+          parameters:
+          - ''
+        description: Standard IF-MIB OID; not verified in the supplied ifX-only dump.
+      - uuid: ab9814f1c8e849af9c46ba25c9b69186
+        name: 'Interface {#IFNAME}: Incoming errors'
+        type: SNMP_AGENT
+        key: fs.if.in.errors[{#SNMPINDEX}]
+        delay: 1m
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: interface
+        snmp_oid: get[1.3.6.1.2.1.2.2.1.14.{#SNMPINDEX}]
+        units: pps
+        preprocessing:
+        - type: CHANGE_PER_SECOND
+          parameters:
+          - ''
+        description: Standard IF-MIB OID; not verified in the supplied ifX-only dump.
+        trigger_prototypes:
+        - uuid: b090e3c3a488423e9bcac8cc68ddf1d1
+          name: 'FS S5850C: Interface {#IFNAME}: Incoming errors'
+          expression: min(/FS S5850C by SNMP/fs.if.in.errors[{#SNMPINDEX}],5m)>{$FS.IF.ERRORS.WARN}
+          priority: WARNING
+          tags:
+          - tag: scope
+            value: performance
+      - uuid: 32ad0e3d4ddb413aa6fb68dbc7fd6bb0
+        name: 'Interface {#IFNAME}: Outgoing discards'
+        type: SNMP_AGENT
+        key: fs.if.out.discards[{#SNMPINDEX}]
+        delay: 1m
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: interface
+        snmp_oid: get[1.3.6.1.2.1.2.2.1.19.{#SNMPINDEX}]
+        units: pps
+        preprocessing:
+        - type: CHANGE_PER_SECOND
+          parameters:
+          - ''
+        description: Standard IF-MIB OID; not verified in the supplied ifX-only dump.
+      - uuid: e37f2d4504a145abb14eb05e144dc875
+        name: 'Interface {#IFNAME}: Outgoing errors'
+        type: SNMP_AGENT
+        key: fs.if.out.errors[{#SNMPINDEX}]
+        delay: 1m
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: interface
+        snmp_oid: get[1.3.6.1.2.1.2.2.1.20.{#SNMPINDEX}]
+        units: pps
+        preprocessing:
+        - type: CHANGE_PER_SECOND
+          parameters:
+          - ''
+        description: Standard IF-MIB OID; not verified in the supplied ifX-only dump.
+        trigger_prototypes:
+        - uuid: 029743a55ce4461e8e8f124f36b48357
+          name: 'FS S5850C: Interface {#IFNAME}: Outgoing errors'
+          expression: min(/FS S5850C by SNMP/fs.if.out.errors[{#SNMPINDEX}],5m)>{$FS.IF.ERRORS.WARN}
+          priority: WARNING
+          tags:
+          - tag: scope
+            value: performance
+      filter:
+        evaltype: AND
+        conditions:
+        - macro: '{#IFNAME}'
+          value: '{$FS.IF.NAME.MATCHES}'
+          operator: MATCHES_REGEX
+          formulaid: A
+        - macro: '{#IFNAME}'
+          value: '{$FS.IF.NAME.NOT_MATCHES}'
+          operator: NOT_MATCHES_REGEX
+          formulaid: B
+      status: DISABLED
+      description: Not present in the supplied dumps. Verify 1.3.6.1.2.1.2.2.1, then enable this discovery rule. Link-down triggers require FS.IF.CONTROL=1
+        for the relevant interface context.
+    - uuid: 11d01523113a4f0ab7c0cea85ea42223
+      name: Fan discovery
+      type: SNMP_AGENT
+      key: fs.fan.discovery
+      snmp_oid: discovery[{#FANSTATUS},1.3.6.1.4.1.52642.1.37.1.1.1.1.4]
+      delay: 1h
+      lifetime: 7d
+      enabled_lifetime_type: DISABLE_IMMEDIATELY
+      item_prototypes:
+      - uuid: f0446e0e177d478a84185e90f64fd0d3
+        name: 'Fan {#SNMPINDEX}: Status'
+        type: SNMP_AGENT
+        key: fs.fan.status[{#SNMPINDEX}]
+        delay: 1m
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: fan
+        snmp_oid: get[1.3.6.1.4.1.52642.1.37.1.1.1.1.4.{#SNMPINDEX}]
+        valuemap:
+          name: FS active status
+        trigger_prototypes:
+        - uuid: c61cdc3f0cf048e69045819eaf418f96
+          name: 'FS S5850C: Fan {#SNMPINDEX}: Inactive'
+          expression: min(/FS S5850C by SNMP/fs.fan.status[{#SNMPINDEX}],3m)=2 and max(/FS S5850C by SNMP/fs.fan.status[{#SNMPINDEX}],3m)=2
+          priority: HIGH
+          tags:
+          - tag: scope
+            value: availability
+      - uuid: b21cfcf8111f4331a0d6843ea2251afc
+        name: 'Fan {#SNMPINDEX}: Reported speed'
+        type: SNMP_AGENT
+        key: fs.fan.speed[{#SNMPINDEX}]
+        delay: 1m
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: fan
+        snmp_oid: get[1.3.6.1.4.1.52642.1.37.1.1.1.1.5.{#SNMPINDEX}]
+        value_type: FLOAT
+        units: '%'
+        preprocessing:
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[0-9]+(?:\.[0-9]+)?%$/.test(s)) { throw 'Expected a percentage'; } var n = Number(s.slice(0,-1));
+            if (n < 0 || n > 100) { throw 'Percentage outside 0..100'; } return n;
+        description: Observed fan speed is a percentage string, not RPM.
+    - uuid: f440d44a8d1e44129c3de2cad9abb45b
+      name: Power supply discovery
+      type: SNMP_AGENT
+      key: fs.psu.discovery
+      snmp_oid: discovery[{#PSUPRESENCE},1.3.6.1.4.1.52642.1.37.1.2.1.2]
+      delay: 1h
+      lifetime: 7d
+      enabled_lifetime_type: DISABLE_IMMEDIATELY
+      item_prototypes:
+      - uuid: 0c137d84c0704e54a040dbad4c4ec899
+        name: 'Power supply {#SNMPINDEX}: Presence'
+        type: SNMP_AGENT
+        key: fs.psu.presence[{#SNMPINDEX}]
+        delay: 1m
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: power
+        snmp_oid: get[1.3.6.1.4.1.52642.1.37.1.2.1.2.{#SNMPINDEX}]
+        valuemap:
+          name: FS PSU presence
+      - uuid: ccf9c4e19343448e984454c7d02db6e7
+        name: 'Power supply {#SNMPINDEX}: Work status'
+        type: SNMP_AGENT
+        key: fs.psu.status[{#SNMPINDEX}]
+        delay: 1m
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: power
+        snmp_oid: get[1.3.6.1.4.1.52642.1.37.1.2.1.3.{#SNMPINDEX}]
+        valuemap:
+          name: FS active status
+      - uuid: 2257e07f95e449629686971274a916f1
+        name: 'Power supply {#SNMPINDEX}: Type'
+        type: SNMP_AGENT
+        key: fs.psu.type[{#SNMPINDEX}]
+        delay: 1m
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: power
+        snmp_oid: get[1.3.6.1.4.1.52642.1.37.1.2.1.4.{#SNMPINDEX}]
+        valuemap:
+          name: FS PSU type
+      - uuid: 402a0d8d687e48f3a3dd26a55850b361
+        name: 'Power supply {#SNMPINDEX}: Alert status'
+        type: SNMP_AGENT
+        key: fs.psu.alert[{#SNMPINDEX}]
+        delay: 1m
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: power
+        snmp_oid: get[1.3.6.1.4.1.52642.1.37.1.2.1.7.{#SNMPINDEX}]
+        valuemap:
+          name: FS PSU alert
+      trigger_prototypes:
+      - uuid: a8f55e857b5f4cd0bcf45940daaeae72
+        name: 'FS S5850C: Power supply {#SNMPINDEX}: Fault'
+        expression: (last(/FS S5850C by SNMP/fs.psu.presence[{#SNMPINDEX}])=1 and min(/FS S5850C by SNMP/fs.psu.status[{#SNMPINDEX}],3m)=2 and
+          max(/FS S5850C by SNMP/fs.psu.status[{#SNMPINDEX}],3m)=2) or (min(/FS S5850C by SNMP/fs.psu.alert[{#SNMPINDEX}],3m)=2 and max(/FS S5850C
+          by SNMP/fs.psu.alert[{#SNMPINDEX}],3m)=2)
+        priority: HIGH
+        tags:
+        - tag: scope
+          value: availability
+      - uuid: c8947be9c8e74567915880b237aab7f5
+        name: 'FS S5850C: Power supply {#SNMPINDEX}: Absent'
+        expression: '{$FS.PSU.PRESENCE.CONTROL}=1 and min(/FS S5850C by SNMP/fs.psu.presence[{#SNMPINDEX}],3m)=2 and max(/FS S5850C by SNMP/fs.psu.presence[{#SNMPINDEX}],3m)=2'
+        priority: WARNING
+        tags:
+        - tag: scope
+          value: performance
+        description: Opt-in presence check. Discovery does not invent unexposed PSU rows.
+    - uuid: 2c92220d6eb740a6b2c0d5fd9c7613a3
+      name: Temperature sensor discovery
+      type: SNMP_AGENT
+      key: fs.temperature.discovery
+      snmp_oid: discovery[{#SENSORVALUE},1.3.6.1.4.1.52642.1.37.1.3.1.4]
+      delay: 1h
+      lifetime: 7d
+      enabled_lifetime_type: DISABLE_IMMEDIATELY
+      item_prototypes:
+      - uuid: afb8903f3a084129aa79919126f33582
+        name: 'Sensor {#SNMPINDEX}: Temperature'
+        type: SNMP_AGENT
+        key: fs.temperature.value[{#SNMPINDEX}]
+        delay: 1m
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: temperature
+        snmp_oid: get[1.3.6.1.4.1.52642.1.37.1.3.1.4.{#SNMPINDEX}]
+        value_type: FLOAT
+        units: °C
+      - uuid: 65479c99902c49078c5a1d710724e425
+        name: 'Sensor {#SNMPINDEX}: Critical threshold'
+        type: SNMP_AGENT
+        key: fs.temperature.critical[{#SNMPINDEX}]
+        delay: 1m
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: temperature
+        snmp_oid: get[1.3.6.1.4.1.52642.1.37.1.3.1.5.{#SNMPINDEX}]
+        value_type: FLOAT
+        units: °C
+      - uuid: c60b06d228d947faad1bd9c99798f3d1
+        name: 'Sensor {#SNMPINDEX}: Upper warning threshold'
+        type: SNMP_AGENT
+        key: fs.temperature.upper[{#SNMPINDEX}]
+        delay: 1m
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: temperature
+        snmp_oid: get[1.3.6.1.4.1.52642.1.37.1.3.1.6.{#SNMPINDEX}]
+        value_type: FLOAT
+        units: °C
+      - uuid: 71f2c1df636243efbe07b64baa376f6a
+        name: 'Sensor {#SNMPINDEX}: Lower warning threshold'
+        type: SNMP_AGENT
+        key: fs.temperature.lower[{#SNMPINDEX}]
+        delay: 1m
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: temperature
+        snmp_oid: get[1.3.6.1.4.1.52642.1.37.1.3.1.7.{#SNMPINDEX}]
+        value_type: FLOAT
+        units: °C
+      filter:
+        evaltype: AND
+        conditions:
+        - macro: '{#SNMPINDEX}'
+          value: ^1\.
+          operator: MATCHES_REGEX
+          formulaid: A
+      trigger_prototypes:
+      - uuid: 52c5631b93464832997f491eef90b482
+        name: 'FS S5850C: Sensor {#SNMPINDEX}: Critical temperature'
+        expression: min(/FS S5850C by SNMP/fs.temperature.value[{#SNMPINDEX}],3m)>last(/FS S5850C by SNMP/fs.temperature.critical[{#SNMPINDEX}])
+        priority: HIGH
+        tags:
+        - tag: scope
+          value: availability
+        recovery_mode: RECOVERY_EXPRESSION
+        recovery_expression: max(/FS S5850C by SNMP/fs.temperature.value[{#SNMPINDEX}],3m)<last(/FS S5850C by SNMP/fs.temperature.critical[{#SNMPINDEX}])-{$FS.TEMP.HYSTERESIS}
+      - uuid: db4f2035f77348e3ab079365f358b046
+        name: 'FS S5850C: Sensor {#SNMPINDEX}: High temperature'
+        expression: min(/FS S5850C by SNMP/fs.temperature.value[{#SNMPINDEX}],3m)>last(/FS S5850C by SNMP/fs.temperature.upper[{#SNMPINDEX}])
+        priority: WARNING
+        tags:
+        - tag: scope
+          value: performance
+        recovery_mode: RECOVERY_EXPRESSION
+        recovery_expression: max(/FS S5850C by SNMP/fs.temperature.value[{#SNMPINDEX}],3m)<last(/FS S5850C by SNMP/fs.temperature.upper[{#SNMPINDEX}])-{$FS.TEMP.HYSTERESIS}
+        dependencies:
+        - name: 'FS S5850C: Sensor {#SNMPINDEX}: Critical temperature'
+          expression: min(/FS S5850C by SNMP/fs.temperature.value[{#SNMPINDEX}],3m)>last(/FS S5850C by SNMP/fs.temperature.critical[{#SNMPINDEX}])
+          recovery_expression: max(/FS S5850C by SNMP/fs.temperature.value[{#SNMPINDEX}],3m)<last(/FS S5850C by SNMP/fs.temperature.critical[{#SNMPINDEX}])-{$FS.TEMP.HYSTERESIS}
+      - uuid: b73f85c84fd7497bb12e456eee151fb5
+        name: 'FS S5850C: Sensor {#SNMPINDEX}: Low temperature'
+        expression: max(/FS S5850C by SNMP/fs.temperature.value[{#SNMPINDEX}],3m)<last(/FS S5850C by SNMP/fs.temperature.lower[{#SNMPINDEX}])
+        priority: WARNING
+        tags:
+        - tag: scope
+          value: performance
+        recovery_mode: RECOVERY_EXPRESSION
+        recovery_expression: min(/FS S5850C by SNMP/fs.temperature.value[{#SNMPINDEX}],3m)>last(/FS S5850C by SNMP/fs.temperature.lower[{#SNMPINDEX}])+{$FS.TEMP.HYSTERESIS}
+      graph_prototypes:
+      - uuid: bbabe26c31de4246a2eb3cfd2545ca5c
+        name: 'Sensor {#SNMPINDEX}: Temperature and limits'
+        graph_items:
+        - sortorder: '0'
+          color: 199C0D
+          item:
+            host: FS S5850C by SNMP
+            key: fs.temperature.value[{#SNMPINDEX}]
+        - sortorder: '1'
+          color: F63100
+          item:
+            host: FS S5850C by SNMP
+            key: fs.temperature.upper[{#SNMPINDEX}]
+        - sortorder: '2'
+          color: 2774A4
+          item:
+            host: FS S5850C by SNMP
+            key: fs.temperature.critical[{#SNMPINDEX}]
+    - uuid: ff3263f1ebc5401088b0f90da71f30c3
+      name: Installed optical module discovery
+      type: SNMP_AGENT
+      key: fs.optics.discovery
+      snmp_oid: discovery[{#PARTNUMBER},1.3.6.1.4.1.52642.1.37.1.10.1.1.3,{#OPTTYPE},1.3.6.1.4.1.52642.1.37.1.10.1.1.1,{#IFNAME},1.3.6.1.2.1.31.1.1.1.1]
+      delay: 1h
+      lifetime: 7d
+      enabled_lifetime_type: DISABLE_IMMEDIATELY
+      item_prototypes:
+      - uuid: 5e5168611e9c475786ecb0fac2d8371d
+        name: 'Optic {#IFNAME}: Vendor'
+        type: DEPENDENT
+        key: fs.optics.vendor[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: '0'
+        tags:
+        - tag: component
+          value: optics
+        value_type: CHAR
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.1.1.2.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+      - uuid: 9bd302ea9829401e8969a08c93d47fb4
+        name: 'Optic {#IFNAME}: Part number'
+        type: DEPENDENT
+        key: fs.optics.partnumber[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: '0'
+        tags:
+        - tag: component
+          value: optics
+        value_type: CHAR
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.1.1.3.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+      - uuid: 7bf318533c214ebc8add38bc8b21f8f9
+        name: 'Optic {#IFNAME}: Type'
+        type: DEPENDENT
+        key: fs.optics.type[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: '0'
+        tags:
+        - tag: component
+          value: optics
+        value_type: CHAR
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.1.1.1.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+      - uuid: de43233634f3460ebf7f87cafbac958a
+        name: 'Optic {#IFNAME}: Module status'
+        type: DEPENDENT
+        key: fs.optics.status[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: '0'
+        tags:
+        - tag: component
+          value: optics
+        value_type: CHAR
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.1.1.11.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+      - uuid: fa032c1197b1496f8adcad84759d7cd9
+        name: 'Optic {#IFNAME}: Temperature (raw)'
+        type: DEPENDENT
+        key: fs.optics.temperature.raw[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: '0'
+        tags:
+        - tag: component
+          value: optics
+        value_type: TEXT
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.2.1.5.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+      - uuid: 7e06e1f292854c88942a6af7d1d74064
+        name: 'Optic {#IFNAME}: Temperature'
+        type: DEPENDENT
+        key: fs.optics.temperature[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: °C
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.2.1.5.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: c90126e61d874af3847d7a06bad08eb4
+        name: 'Optic {#IFNAME}: Temperature alarm.high'
+        type: DEPENDENT
+        key: fs.optics.temperature.alarm.high[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: °C
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.2.1.1.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: 51783ae2e2af44bea8dd91df27c83cd1
+        name: 'Optic {#IFNAME}: Temperature alarm.low'
+        type: DEPENDENT
+        key: fs.optics.temperature.alarm.low[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: °C
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.2.1.2.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: d069f7f565024f7a91b480aab86a7b98
+        name: 'Optic {#IFNAME}: Temperature warn.high'
+        type: DEPENDENT
+        key: fs.optics.temperature.warn.high[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: °C
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.2.1.3.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: b2d057d622794f4aaf2dc22ae7977d45
+        name: 'Optic {#IFNAME}: Temperature warn.low'
+        type: DEPENDENT
+        key: fs.optics.temperature.warn.low[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: °C
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.2.1.4.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: 5ecaa5457b364842a530aeeb5d434331
+        name: 'Optic {#IFNAME}: Supply voltage (raw)'
+        type: DEPENDENT
+        key: fs.optics.voltage.raw[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: '0'
+        tags:
+        - tag: component
+          value: optics
+        value_type: TEXT
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.3.1.5.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+      - uuid: e318a8efda1a48caaaec68fc276f30f1
+        name: 'Optic {#IFNAME}: Supply voltage'
+        type: DEPENDENT
+        key: fs.optics.voltage[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: V
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.3.1.5.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: cc90afffe8774dbc9319bc406b175e95
+        name: 'Optic {#IFNAME}: Supply voltage alarm.high'
+        type: DEPENDENT
+        key: fs.optics.voltage.alarm.high[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: V
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.3.1.1.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: 633e6cd07ca746c699fb40bbe2e681a4
+        name: 'Optic {#IFNAME}: Supply voltage alarm.low'
+        type: DEPENDENT
+        key: fs.optics.voltage.alarm.low[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: V
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.3.1.2.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: 81fa5c2acd7e4421813f833d1c773ab7
+        name: 'Optic {#IFNAME}: Supply voltage warn.high'
+        type: DEPENDENT
+        key: fs.optics.voltage.warn.high[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: V
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.3.1.3.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: aab31ae17a2446aeabca05f3de3a0418
+        name: 'Optic {#IFNAME}: Supply voltage warn.low'
+        type: DEPENDENT
+        key: fs.optics.voltage.warn.low[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: V
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.3.1.4.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: faedf76b68c942058f959bfd543c8034
+        name: 'Optic {#IFNAME}: Laser bias (raw)'
+        type: DEPENDENT
+        key: fs.optics.bias.raw[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: '0'
+        tags:
+        - tag: component
+          value: optics
+        value_type: TEXT
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.4.1.5.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+      - uuid: c835254f3576455089b0af7c6b125d56
+        name: 'Optic {#IFNAME}: Laser bias'
+        type: DEPENDENT
+        key: fs.optics.bias[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: mA
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.4.1.5.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: b4504ec38b6c47e5b9f432d82adf0819
+        name: 'Optic {#IFNAME}: Laser bias alarm.high'
+        type: DEPENDENT
+        key: fs.optics.bias.alarm.high[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: mA
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.4.1.1.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: f6442d250c5842679017bd0e82e83be5
+        name: 'Optic {#IFNAME}: Laser bias alarm.low'
+        type: DEPENDENT
+        key: fs.optics.bias.alarm.low[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: mA
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.4.1.2.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: f4cf65e393994af9b0f87645efdfc4a9
+        name: 'Optic {#IFNAME}: Laser bias warn.high'
+        type: DEPENDENT
+        key: fs.optics.bias.warn.high[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: mA
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.4.1.3.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: 2325ac0d74134a7787f4e73f43ac99ba
+        name: 'Optic {#IFNAME}: Laser bias warn.low'
+        type: DEPENDENT
+        key: fs.optics.bias.warn.low[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: mA
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.4.1.4.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: f4617f5446a44c2ebd8e4003be2bcc5e
+        name: 'Optic {#IFNAME}: TX power (raw)'
+        type: DEPENDENT
+        key: fs.optics.tx.raw[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: '0'
+        tags:
+        - tag: component
+          value: optics
+        value_type: TEXT
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.5.1.5.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+      - uuid: e8630b6defb549f5bf2843a1c13884a3
+        name: 'Optic {#IFNAME}: TX power'
+        type: DEPENDENT
+        key: fs.optics.tx[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: dBm
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.5.1.5.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: 01af907390a845d5b4f4ebd9d0db9ba1
+        name: 'Optic {#IFNAME}: TX power alarm.high'
+        type: DEPENDENT
+        key: fs.optics.tx.alarm.high[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: dBm
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.5.1.1.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: a885b5a5654f4d3e9bc717cc1f6ec2df
+        name: 'Optic {#IFNAME}: TX power alarm.low'
+        type: DEPENDENT
+        key: fs.optics.tx.alarm.low[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: dBm
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.5.1.2.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: a708dfd4092b43e898632c6d68441e21
+        name: 'Optic {#IFNAME}: TX power warn.high'
+        type: DEPENDENT
+        key: fs.optics.tx.warn.high[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: dBm
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.5.1.3.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: 200ad372d4564b2f812af040fb565749
+        name: 'Optic {#IFNAME}: TX power warn.low'
+        type: DEPENDENT
+        key: fs.optics.tx.warn.low[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: dBm
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.5.1.4.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: 0e7c91cbd5144883af353b768adc43b7
+        name: 'Optic {#IFNAME}: RX power (raw)'
+        type: DEPENDENT
+        key: fs.optics.rx.raw[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: '0'
+        tags:
+        - tag: component
+          value: optics
+        value_type: TEXT
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.6.1.5.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+      - uuid: b167cdd244f64204a84defe12ec71264
+        name: 'Optic {#IFNAME}: RX power'
+        type: DEPENDENT
+        key: fs.optics.rx[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: dBm
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.6.1.5.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: 0e32cc2320524ec39f80305bebb10b0b
+        name: 'Optic {#IFNAME}: RX power alarm.high'
+        type: DEPENDENT
+        key: fs.optics.rx.alarm.high[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: dBm
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.6.1.1.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: d883b9b29ff24aa589d6a402e1808c51
+        name: 'Optic {#IFNAME}: RX power alarm.low'
+        type: DEPENDENT
+        key: fs.optics.rx.alarm.low[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: dBm
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.6.1.2.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: d59c799b87954c16b5d357b9132c916c
+        name: 'Optic {#IFNAME}: RX power warn.high'
+        type: DEPENDENT
+        key: fs.optics.rx.warn.high[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: dBm
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.6.1.3.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      - uuid: 05de45dcd87b46be892777fe048c056d
+        name: 'Optic {#IFNAME}: RX power warn.low'
+        type: DEPENDENT
+        key: fs.optics.rx.warn.low[{#SNMPINDEX}]
+        delay: '0'
+        history: 14d
+        trends: 365d
+        tags:
+        - tag: component
+          value: optics
+        value_type: FLOAT
+        units: dBm
+        preprocessing:
+        - type: SNMP_WALK_VALUE
+          parameters:
+          - 1.3.6.1.4.1.52642.1.37.1.10.6.1.4.{#SNMPINDEX}
+          - '0'
+          error_handler: DISCARD_VALUE
+        - type: JAVASCRIPT
+          parameters:
+          - var s = value.replace(/^\s+|\s+$/g, ''); if (!/^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(s)) { throw 'Expected a single finite
+            numeric value'; } var n = Number(s); if (!isFinite(n)) { throw 'Non-finite value'; } return n;
+          error_handler: DISCARD_VALUE
+        master_item:
+          key: fs.optics.walk
+        description: Single numeric DOM reading only; empty, non-finite and multi-channel strings are discarded without producing a misleading
+          number.
+      filter:
+        evaltype: AND
+        conditions:
+        - macro: '{#PARTNUMBER}'
+          value: \S
+          operator: MATCHES_REGEX
+          formulaid: A
+      description: Only rows with non-empty part numbers. Numeric diagnostics require a single finite number. Multi-lane values remain in raw
+        text items. Optical alarm control defaults to 0.
+      trigger_prototypes:
+      - uuid: 184d884b96b343418fa29a66da0d2ebd
+        name: 'FS S5850C: Optic {#IFNAME}: Temperature above alarm threshold'
+        expression: '{$FS.OPTICS.CONTROL:"{#IFNAME}"}=1 and last(/FS S5850C by SNMP/fs.optics.status[{#SNMPINDEX}])="active" and count(/FS S5850C
+          by SNMP/fs.optics.temperature[{#SNMPINDEX}],3m)>0 and count(/FS S5850C by SNMP/fs.optics.temperature.alarm.high[{#SNMPINDEX}],3m)>0
+          and (min(/FS S5850C by SNMP/fs.optics.temperature[{#SNMPINDEX}],3m)>last(/FS S5850C by SNMP/fs.optics.temperature.alarm.high[{#SNMPINDEX}]))'
+        priority: WARNING
+        tags:
+        - tag: scope
+          value: performance
+        description: Opt-in per interface. Uses module alarm limits. Dark/unused optics can legitimately have low RX power. Multi-channel DOM
+          requires a separate validated implementation.
+      - uuid: 85cdeec7a84147f6bc84d63b829e40df
+        name: 'FS S5850C: Optic {#IFNAME}: Temperature below alarm threshold'
+        expression: '{$FS.OPTICS.CONTROL:"{#IFNAME}"}=1 and last(/FS S5850C by SNMP/fs.optics.status[{#SNMPINDEX}])="active" and count(/FS S5850C
+          by SNMP/fs.optics.temperature[{#SNMPINDEX}],3m)>0 and count(/FS S5850C by SNMP/fs.optics.temperature.alarm.low[{#SNMPINDEX}],3m)>0 and
+          (max(/FS S5850C by SNMP/fs.optics.temperature[{#SNMPINDEX}],3m)<last(/FS S5850C by SNMP/fs.optics.temperature.alarm.low[{#SNMPINDEX}]))'
+        priority: WARNING
+        tags:
+        - tag: scope
+          value: performance
+        description: Opt-in per interface. Uses module alarm limits. Dark/unused optics can legitimately have low RX power. Multi-channel DOM
+          requires a separate validated implementation.
+      - uuid: 02e849cb4d274da2b20a21184d507ec9
+        name: 'FS S5850C: Optic {#IFNAME}: Supply voltage above alarm threshold'
+        expression: '{$FS.OPTICS.CONTROL:"{#IFNAME}"}=1 and last(/FS S5850C by SNMP/fs.optics.status[{#SNMPINDEX}])="active" and count(/FS S5850C
+          by SNMP/fs.optics.voltage[{#SNMPINDEX}],3m)>0 and count(/FS S5850C by SNMP/fs.optics.voltage.alarm.high[{#SNMPINDEX}],3m)>0 and (min(/FS
+          S5850C by SNMP/fs.optics.voltage[{#SNMPINDEX}],3m)>last(/FS S5850C by SNMP/fs.optics.voltage.alarm.high[{#SNMPINDEX}]))'
+        priority: WARNING
+        tags:
+        - tag: scope
+          value: performance
+        description: Opt-in per interface. Uses module alarm limits. Dark/unused optics can legitimately have low RX power. Multi-channel DOM
+          requires a separate validated implementation.
+      - uuid: b85117bb550244e393f666497d2cf51d
+        name: 'FS S5850C: Optic {#IFNAME}: Supply voltage below alarm threshold'
+        expression: '{$FS.OPTICS.CONTROL:"{#IFNAME}"}=1 and last(/FS S5850C by SNMP/fs.optics.status[{#SNMPINDEX}])="active" and count(/FS S5850C
+          by SNMP/fs.optics.voltage[{#SNMPINDEX}],3m)>0 and count(/FS S5850C by SNMP/fs.optics.voltage.alarm.low[{#SNMPINDEX}],3m)>0 and (max(/FS
+          S5850C by SNMP/fs.optics.voltage[{#SNMPINDEX}],3m)<last(/FS S5850C by SNMP/fs.optics.voltage.alarm.low[{#SNMPINDEX}]))'
+        priority: WARNING
+        tags:
+        - tag: scope
+          value: performance
+        description: Opt-in per interface. Uses module alarm limits. Dark/unused optics can legitimately have low RX power. Multi-channel DOM
+          requires a separate validated implementation.
+      - uuid: 58b46850598d4f5198288f71e9800f5c
+        name: 'FS S5850C: Optic {#IFNAME}: Laser bias above alarm threshold'
+        expression: '{$FS.OPTICS.CONTROL:"{#IFNAME}"}=1 and last(/FS S5850C by SNMP/fs.optics.status[{#SNMPINDEX}])="active" and count(/FS S5850C
+          by SNMP/fs.optics.bias[{#SNMPINDEX}],3m)>0 and count(/FS S5850C by SNMP/fs.optics.bias.alarm.high[{#SNMPINDEX}],3m)>0 and (min(/FS S5850C
+          by SNMP/fs.optics.bias[{#SNMPINDEX}],3m)>last(/FS S5850C by SNMP/fs.optics.bias.alarm.high[{#SNMPINDEX}]))'
+        priority: WARNING
+        tags:
+        - tag: scope
+          value: performance
+        description: Opt-in per interface. Uses module alarm limits. Dark/unused optics can legitimately have low RX power. Multi-channel DOM
+          requires a separate validated implementation.
+      - uuid: 0a63e53eed5247b3975e894e03da5d9d
+        name: 'FS S5850C: Optic {#IFNAME}: Laser bias below alarm threshold'
+        expression: '{$FS.OPTICS.CONTROL:"{#IFNAME}"}=1 and last(/FS S5850C by SNMP/fs.optics.status[{#SNMPINDEX}])="active" and count(/FS S5850C
+          by SNMP/fs.optics.bias[{#SNMPINDEX}],3m)>0 and count(/FS S5850C by SNMP/fs.optics.bias.alarm.low[{#SNMPINDEX}],3m)>0 and (max(/FS S5850C
+          by SNMP/fs.optics.bias[{#SNMPINDEX}],3m)<last(/FS S5850C by SNMP/fs.optics.bias.alarm.low[{#SNMPINDEX}]))'
+        priority: WARNING
+        tags:
+        - tag: scope
+          value: performance
+        description: Opt-in per interface. Uses module alarm limits. Dark/unused optics can legitimately have low RX power. Multi-channel DOM
+          requires a separate validated implementation.
+      - uuid: 31c29e33e1b944b799a770bf97775835
+        name: 'FS S5850C: Optic {#IFNAME}: TX power above alarm threshold'
+        expression: '{$FS.OPTICS.CONTROL:"{#IFNAME}"}=1 and last(/FS S5850C by SNMP/fs.optics.status[{#SNMPINDEX}])="active" and count(/FS S5850C
+          by SNMP/fs.optics.tx[{#SNMPINDEX}],3m)>0 and count(/FS S5850C by SNMP/fs.optics.tx.alarm.high[{#SNMPINDEX}],3m)>0 and (min(/FS S5850C
+          by SNMP/fs.optics.tx[{#SNMPINDEX}],3m)>last(/FS S5850C by SNMP/fs.optics.tx.alarm.high[{#SNMPINDEX}]))'
+        priority: WARNING
+        tags:
+        - tag: scope
+          value: performance
+        description: Opt-in per interface. Uses module alarm limits. Dark/unused optics can legitimately have low RX power. Multi-channel DOM
+          requires a separate validated implementation.
+      - uuid: 4d0e0f18cd194a19a8e38d69723f00e0
+        name: 'FS S5850C: Optic {#IFNAME}: TX power below alarm threshold'
+        expression: '{$FS.OPTICS.CONTROL:"{#IFNAME}"}=1 and last(/FS S5850C by SNMP/fs.optics.status[{#SNMPINDEX}])="active" and count(/FS S5850C
+          by SNMP/fs.optics.tx[{#SNMPINDEX}],3m)>0 and count(/FS S5850C by SNMP/fs.optics.tx.alarm.low[{#SNMPINDEX}],3m)>0 and (max(/FS S5850C
+          by SNMP/fs.optics.tx[{#SNMPINDEX}],3m)<last(/FS S5850C by SNMP/fs.optics.tx.alarm.low[{#SNMPINDEX}]))'
+        priority: WARNING
+        tags:
+        - tag: scope
+          value: performance
+        description: Opt-in per interface. Uses module alarm limits. Dark/unused optics can legitimately have low RX power. Multi-channel DOM
+          requires a separate validated implementation.
+      - uuid: 7b8e19ea3d9f46a6a4a8e2ded101c2c3
+        name: 'FS S5850C: Optic {#IFNAME}: RX power above alarm threshold'
+        expression: '{$FS.OPTICS.CONTROL:"{#IFNAME}"}=1 and last(/FS S5850C by SNMP/fs.optics.status[{#SNMPINDEX}])="active" and count(/FS S5850C
+          by SNMP/fs.optics.rx[{#SNMPINDEX}],3m)>0 and count(/FS S5850C by SNMP/fs.optics.rx.alarm.high[{#SNMPINDEX}],3m)>0 and (min(/FS S5850C
+          by SNMP/fs.optics.rx[{#SNMPINDEX}],3m)>last(/FS S5850C by SNMP/fs.optics.rx.alarm.high[{#SNMPINDEX}]))'
+        priority: WARNING
+        tags:
+        - tag: scope
+          value: performance
+        description: Opt-in per interface. Uses module alarm limits. Dark/unused optics can legitimately have low RX power. Multi-channel DOM
+          requires a separate validated implementation.
+      - uuid: aef859fff7cc4d0ba048b3ffdf526914
+        name: 'FS S5850C: Optic {#IFNAME}: RX power below alarm threshold'
+        expression: '{$FS.OPTICS.CONTROL:"{#IFNAME}"}=1 and last(/FS S5850C by SNMP/fs.optics.status[{#SNMPINDEX}])="active" and count(/FS S5850C
+          by SNMP/fs.optics.rx[{#SNMPINDEX}],3m)>0 and count(/FS S5850C by SNMP/fs.optics.rx.alarm.low[{#SNMPINDEX}],3m)>0 and (max(/FS S5850C
+          by SNMP/fs.optics.rx[{#SNMPINDEX}],3m)<last(/FS S5850C by SNMP/fs.optics.rx.alarm.low[{#SNMPINDEX}]))'
+        priority: WARNING
+        tags:
+        - tag: scope
+          value: performance
+        description: Opt-in per interface. Uses module alarm limits. Dark/unused optics can legitimately have low RX power. Multi-channel DOM
+          requires a separate validated implementation.
+      graph_prototypes:
+      - uuid: ae2aa09f4e8f47cbae60173e2c1a2be3
+        name: 'Optic {#IFNAME}: Optical power'
+        graph_items:
+        - sortorder: '0'
+          color: 199C0D
+          item:
+            host: FS S5850C by SNMP
+            key: fs.optics.tx[{#SNMPINDEX}]
+        - sortorder: '1'
+          color: F63100
+          item:
+            host: FS S5850C by SNMP
+            key: fs.optics.rx[{#SNMPINDEX}]
+    macros:
+    - macro: '{$FS.CPU.WARN}'
+      value: '80'
+      description: CPU warning threshold (%).
+    - macro: '{$FS.MEMORY.WARN}'
+      value: '90'
+      description: Reported used/total memory warning threshold (%).
+    - macro: '{$FS.SNMP.TIMEOUT}'
+      value: 5m
+      description: SNMP unavailable window.
+    - macro: '{$FS.IF.NAME.MATCHES}'
+      value: ^eth-
+      description: Physical interfaces in the supplied S5850C dump.
+    - macro: '{$FS.IF.NAME.NOT_MATCHES}'
+      value: ^$
+      description: Additional excluded interface names.
+    - macro: '{$FS.IF.UTIL.WARN}'
+      value: '90'
+      description: Bandwidth utilization warning threshold (%).
+    - macro: '{$FS.IF.CONTROL}'
+      value: '0'
+      description: 'Link-down alarms: enable with interface context after verifying optional IF-MIB discovery.'
+    - macro: '{$FS.IF.ERRORS.WARN}'
+      value: '2'
+      description: Interface error rate warning (pps), optional discovery only.
+    - macro: '{$FS.PSU.PRESENCE.CONTROL}'
+      value: '0'
+      description: Enable PSU absent alarms only after checking expected installed PSU rows.
+    - macro: '{$FS.TEMP.HYSTERESIS}'
+      value: '2'
+      description: Temperature recovery margin in degrees Celsius.
+    - macro: '{$FS.OPTICS.CONTROL}'
+      value: '0'
+      description: Enable optical alarms per interface after checking DOM data and link use.
+    valuemaps:
+    - uuid: 433d456f3fc64ebd95ff7044e6ad07d2
+      name: FS active status
+      mappings:
+      - value: '1'
+        newvalue: active
+      - value: '2'
+        newvalue: inactive
+      - value: '3'
+        newvalue: not installed
+      - value: '4'
+        newvalue: unsupported
+    - uuid: 1192a4ac3e9748b1a63ed8d483bc603b
+      name: FS PSU presence
+      mappings:
+      - value: '1'
+        newvalue: present
+      - value: '2'
+        newvalue: absent
+      - value: '3'
+        newvalue: unsupported
+    - uuid: ceab7131130f45b49667e75ab10e92a5
+      name: FS PSU type
+      mappings:
+      - value: '1'
+        newvalue: AC
+      - value: '2'
+        newvalue: DC
+      - value: '3'
+        newvalue: unknown
+      - value: '4'
+        newvalue: not installed
+      - value: '5'
+        newvalue: unsupported
+    - uuid: b6a0294834b647b7b419caff2ec05658
+      name: FS PSU alert
+      mappings:
+      - value: '1'
+        newvalue: no alert
+      - value: '2'
+        newvalue: alert
+      - value: '3'
+        newvalue: unsupported
+    - uuid: ae0228bb7da846bb97b582423262a025
+      name: SNMP availability
+      mappings:
+      - value: '0'
+        newvalue: unavailable
+      - value: '1'
+        newvalue: available
+      - value: '2'
+        newvalue: unknown
+    - uuid: 54564ebd725c4cfb866fedfe315a8c9e
+      name: IF admin status
+      mappings:
+      - value: '1'
+        newvalue: up
+      - value: '2'
+        newvalue: down
+      - value: '3'
+        newvalue: testing
+    - uuid: 4f5d66d727954c79a9896bcd38c47df4
+      name: IF oper status
+      mappings:
+      - value: '1'
+        newvalue: up
+      - value: '2'
+        newvalue: down
+      - value: '3'
+        newvalue: testing
+      - value: '4'
+        newvalue: unknown
+      - value: '5'
+        newvalue: dormant
+      - value: '6'
+        newvalue: not present
+      - value: '7'
+        newvalue: lower layer down
+    tags:
+    - tag: component
+      value: network
+    - tag: vendor
+      value: FS
+    - tag: model
+      value: S5850C
